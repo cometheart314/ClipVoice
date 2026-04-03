@@ -17,7 +17,6 @@ class AudioPlayer {
     func warmUp() async {
         ensureEngineRunning()
         let format = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: sampleRate, channels: channels, interleaved: true)!
-        // 極短い無音（0.05秒）でパイプラインをプライミング
         let frameCount = AVAudioFrameCount(sampleRate * 0.05)
         guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return }
         buffer.frameLength = frameCount
@@ -33,22 +32,6 @@ class AudioPlayer {
     /// 音声データ（Linear16 PCM）を再生し、再生完了まで待機する
     func playAndWait(data: Data) async {
         guard let buffer = pcmBuffer(from: data) else { return }
-        ensureEngineRunning()
-
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            playerNode.scheduleBuffer(buffer) {
-                continuation.resume()
-            }
-            playerNode.play()
-        }
-    }
-
-    /// 指定した秒数の無音を再生し、完了まで待機する
-    func playSilence(duration: Double) async {
-        let format = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: sampleRate, channels: channels, interleaved: true)!
-        let frameCount = AVAudioFrameCount(sampleRate * duration)
-        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return }
-        buffer.frameLength = frameCount
         ensureEngineRunning()
 
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in

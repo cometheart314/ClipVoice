@@ -188,59 +188,42 @@ class StatusBarController {
         // テキスト全体から言語を1回だけ判定し、全チャンクで同じ音声を使う
         let language = textProcessor.detectLanguage(text)
 
-        // オーディオパイプラインを事前に暖めておく（頭切れ防止）
-        await audioPlayer.warmUp()
-        if Task.isCancelled { return }
-
-        let prefetchMinChars = 100
-
-        // 先読みキューを文字数ベースで埋める
-        var prefetchQueue: [Task<Data, Error>] = []
-        var nextPrefetchIndex = 0
-        var prefetchedChars = 0
-
-        func fillPrefetchQueue() {
-            while nextPrefetchIndex < chunks.count && prefetchedChars < prefetchMinChars {
-                let chunk = chunks[nextPrefetchIndex]
-                prefetchQueue.append(fetchAudio(for: chunk, language: language))
-                prefetchedChars += chunk.count
-                nextPrefetchIndex += 1
-            }
-            // 最低1つは先読みを追加
-            if nextPrefetchIndex < chunks.count && prefetchQueue.count <= prefetchQueue.count {
-                let chunk = chunks[nextPrefetchIndex]
-                prefetchQueue.append(fetchAudio(for: chunk, language: language))
-                prefetchedChars += chunk.count
-                nextPrefetchIndex += 1
-            }
+        // 全チャンクの音声を取得
+        var fetchTasks: [Task<Data, Error>] = []
+        for chunk in chunks {
+            fetchTasks.append(fetchAudio(for: chunk, language: language))
         }
 
-        fillPrefetchQueue()
+        // 全チャンクの音声データを取得し、フェード処理して結合
+        let silenceBytes = Data(count: Int(24000 * 0.6) * MemoryLayout<Int16>.size) // 0.6秒
+        let fadeSamples = 480 // フェード区間（約20ms @ 24kHz）
+        var combinedData = Data()
 
-        for index in 0..<chunks.count {
-            if Task.isCancelled { break }
+        for (index, task) in fetchTasks.enumerated() {
+            if Task.isCancelled { return }
 
             do {
-                let audioData = try await prefetchQueue[index].value
-                if Task.isCancelled { break }
+                var audioData = try await task.value
+                Self.applyFades(&audioData, fadeSamples: fadeSamples)
+                combinedData.append(audioData)
 
-                // 再生開始前に先読みキューを補充
-                prefetchedChars -= chunks[index].count
-                fillPrefetchQueue()
-
-                await audioPlayer.playAndWait(data: audioData)
-
-                // 段落の区切りでは間を入れる
-                if paragraphBreaks.contains(index) && !Task.isCancelled {
-                    await audioPlayer.playSilence(duration: 0.6)
+                if paragraphBreaks.contains(index) {
+                    combinedData.append(silenceBytes)
                 }
             } catch {
                 if !Task.isCancelled {
                     print("TTS error for chunk \(index): \(error)")
                 }
-                break
+                return
             }
         }
+
+        if Task.isCancelled { return }
+
+        // オーディオパイプラインを暖めてから一括再生
+        await audioPlayer.warmUp()
+        if Task.isCancelled { return }
+        await audioPlayer.playAndWait(data: combinedData)
     }
 
     private func speakWithAppleTTS(_ text: String) async {
@@ -256,6 +239,29 @@ class StatusBarController {
 
             if paragraphBreaks.contains(index) && !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 600_000_000) // 0.6秒
+            }
+        }
+    }
+
+    /// PCM音声データの先頭と末尾にフェードイン/フェードアウトを適用
+    private static func applyFades(_ data: inout Data, fadeSamples: Int) {
+        let sampleCount = data.count / MemoryLayout<Int16>.size
+        guard sampleCount > fadeSamples * 2 else { return }
+
+        data.withUnsafeMutableBytes { rawBuffer in
+            guard let ptr = rawBuffer.baseAddress?.assumingMemoryBound(to: Int16.self) else { return }
+
+            // フェードイン
+            for i in 0..<fadeSamples {
+                let gain = Float(i) / Float(fadeSamples)
+                ptr[i] = Int16(Float(ptr[i]) * gain)
+            }
+
+            // フェードアウト
+            for i in 0..<fadeSamples {
+                let position = sampleCount - fadeSamples + i
+                let gain = Float(fadeSamples - i) / Float(fadeSamples)
+                ptr[position] = Int16(Float(ptr[position]) * gain)
             }
         }
     }
