@@ -9,7 +9,11 @@ let mainMenu = NSMenu()
 
 let appMenuItem = NSMenuItem()
 let appMenu = NSMenu()
-appMenu.addItem(withTitle: "Quit CopyTalk", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+appMenu.addItem(withTitle: NSLocalizedString("About CopyTalk", comment: ""), action: #selector(AppDelegate.showAbout), keyEquivalent: "")
+appMenu.addItem(NSMenuItem.separator())
+appMenu.addItem(withTitle: NSLocalizedString("Settings...", comment: ""), action: #selector(AppDelegate.showPreferences), keyEquivalent: ",")
+appMenu.addItem(NSMenuItem.separator())
+appMenu.addItem(withTitle: NSLocalizedString("Quit CopyTalk", comment: ""), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
 appMenuItem.submenu = appMenu
 mainMenu.addItem(appMenuItem)
 

@@ -19,6 +19,7 @@
 		A10008 /* AppleTTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10008 /* AppleTTSService.swift */; };
 		A10009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10009 /* Assets.xcassets */; };
 		A10010 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10012 /* Localizable.strings */; };
+		A10011 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10015 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,20 +38,10 @@
 		B10011 /* CopyTalk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CopyTalk.entitlements; sourceTree = "<group>"; };
 		B10013 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B10014 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		B10016 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B10017 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		B10020 /* CopyTalk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CopyTalk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXVariantGroup section */
-		B10012 /* Localizable.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				B10013 /* en */,
-				B10014 /* ja */,
-			);
-			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		F10001 /* Frameworks */ = {
@@ -88,6 +79,7 @@
 				B10010 /* Info.plist */,
 				B10011 /* CopyTalk.entitlements */,
 				B10012 /* Localizable.strings */,
+				B10015 /* InfoPlist.strings */,
 			);
 			path = CopyTalk;
 			sourceTree = "<group>";
@@ -162,6 +154,7 @@
 				74DF38D92F7FBC7300E46FAB /* CopyTalkAppIcon.icon in Resources */,
 				A10009 /* Assets.xcassets in Resources */,
 				A10010 /* Localizable.strings in Resources */,
+				A10011 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,6 +178,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B10012 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B10013 /* en */,
+				B10014 /* ja */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		B10015 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B10016 /* en */,
+				B10017 /* ja */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		C10010 /* Debug */ = {
@@ -306,7 +320,7 @@
 				CODE_SIGN_ENTITLEMENTS = CopyTalk/CopyTalk.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 260404.0;
 				DEVELOPMENT_TEAM = F8FSQZCDV7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -331,7 +345,7 @@
 				CODE_SIGN_ENTITLEMENTS = CopyTalk/CopyTalk.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 260404.0;
 				DEVELOPMENT_TEAM = F8FSQZCDV7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;

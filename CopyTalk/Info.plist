@@ -33,6 +33,8 @@
 			<dict>
 				<key>default</key>
 				<string>CopyTalk - Read Aloud</string>
+				<key>ja</key>
+				<string>CopyTalk - 読み上げ</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>readText</string>

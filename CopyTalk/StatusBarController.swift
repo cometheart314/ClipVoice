@@ -21,6 +21,7 @@ class StatusBarController {
     private var lastChangeCount: Int
     private var lastClipboardContent: String?
     private var lastClipboardChangeTime: Date?
+    private var lastSpeakTime: Date?
 
     init() {
         lastChangeCount = NSPasteboard.general.changeCount
@@ -122,6 +123,11 @@ class StatusBarController {
 
         let now = Date()
 
+        // 読み上げ開始直後のクリップボード変更は無視（トリプルクリック防止）
+        if let speakTime = lastSpeakTime, now.timeIntervalSince(speakTime) < 1.0 {
+            return
+        }
+
         if let prevContent = lastClipboardContent,
            let prevTime = lastClipboardChangeTime,
            content == prevContent,
@@ -129,6 +135,7 @@ class StatusBarController {
             // Cmd+C 連打を検出 → 読み上げ開始
             lastClipboardContent = nil
             lastClipboardChangeTime = nil
+            lastSpeakTime = now
             speakText(content)
         } else {
             lastClipboardContent = content

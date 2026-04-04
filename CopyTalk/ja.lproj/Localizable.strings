@@ -1,4 +1,5 @@
 /* Menu Items */
+"About CopyTalk" = "CopyTalk について";
 "Read Clipboard" = "クリップボードを読み上げ";
 "Stop" = "停止";
 "Settings..." = "設定...";

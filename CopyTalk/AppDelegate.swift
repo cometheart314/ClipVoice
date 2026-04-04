@@ -20,6 +20,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return statusBarController.menu
     }
 
+    @objc func showAbout() {
+        NSApp.orderFrontStandardAboutPanel(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc func showPreferences() {
+        PreferencesWindowController.shared.showWindow(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
     }
