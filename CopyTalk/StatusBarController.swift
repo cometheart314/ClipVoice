@@ -178,6 +178,8 @@ class StatusBarController {
         // 読み上げ中なら停止してから新しいテキストを読み上げ
         if isSpeaking {
             stopSpeaking()
+            // 前の Task が完全に停止するまで少し待つ
+            RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
         }
 
         let useGoogleTTS = KeychainHelper.getAPIKey() != nil

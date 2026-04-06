@@ -30,11 +30,17 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
     /// 読み上げを即座に停止する
     func stop() {
         synthesizer?.stopSpeaking()
+        // 待機中の continuation があれば解放する（二重読み上げ防止）
+        if let cont = continuation {
+            cont.resume()
+            continuation = nil
+        }
     }
 
     /// 言語に応じた音声を選択する
-    /// システム設定（アクセシビリティ > システムの声）を優先し、
-    /// 言語が一致しない場合のみ該当言語の音声にフォールバック
+    /// voice: nil で NSSpeechSynthesizer を生成するとシステム設定
+    /// （アクセシビリティ > 読み上げコンテンツ > システムの声）が使われる。
+    /// その音声の言語が一致しない場合のみ該当言語の音声にフォールバック。
     private func selectVoice(for language: SpeechLanguage) -> NSSpeechSynthesizer.VoiceName? {
         let targetPrefix: String
         switch language {
@@ -42,15 +48,17 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
         case .english:  targetPrefix = "en"
         }
 
-        // システムのデフォルト音声が対象言語に一致すればそれを使う
-        let defaultVoice = NSSpeechSynthesizer.defaultVoice
-        let defaultAttrs = NSSpeechSynthesizer.attributes(forVoice: defaultVoice)
-        if let localeId = defaultAttrs[.localeIdentifier] as? String,
-           localeId.hasPrefix(targetPrefix) {
-            return defaultVoice
+        // システムの声（voice: nil）のロケールを確認
+        if let systemSynth = NSSpeechSynthesizer(voice: nil),
+           let voiceName = systemSynth.voice() {
+            let attrs = NSSpeechSynthesizer.attributes(forVoice: voiceName)
+            if let localeId = attrs[.localeIdentifier] as? String,
+               localeId.hasPrefix(targetPrefix) {
+                return voiceName
+            }
         }
 
-        // 一致しない場合、対象言語の音声から最初のものを選択
+        // システムの声が対象言語でない場合、該当言語の音声を探す
         for voice in NSSpeechSynthesizer.availableVoices {
             let attrs = NSSpeechSynthesizer.attributes(forVoice: voice)
             if let localeId = attrs[.localeIdentifier] as? String,
@@ -59,7 +67,8 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
             }
         }
 
-        return NSSpeechSynthesizer.defaultVoice
+        // どれも見つからなければシステムの声をそのまま使う
+        return nil
     }
 
     /// Google TTS の速度 (0.5-2.0, 1.0=標準) を NSSpeechSynthesizer の速度にマッピング
