@@ -165,8 +165,8 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
 
         // Info (最下段)
         y -= 60
-        let infoLabel = NSTextField(wrappingLabelWithString: "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above.".localized)
-        infoLabel.frame = NSRect(x: margin, y: y, width: 410, height: 44)
+        let infoLabel = NSTextField(wrappingLabelWithString: "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. ClipVoice uses Neural2 voices — free up to 1 million characters per month.".localized)
+        infoLabel.frame = NSRect(x: margin, y: y, width: 410, height: 58)
         infoLabel.font = NSFont.systemFont(ofSize: 11)
         infoLabel.textColor = .secondaryLabelColor
         contentView.addSubview(infoLabel)

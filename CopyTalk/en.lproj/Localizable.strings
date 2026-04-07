@@ -13,6 +13,7 @@
 "Show Icon in Dock" = "Show Icon in Dock";
 "Launch at Login" = "Launch at Login";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above." = "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above.";
+"ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. ClipVoice uses Neural2 voices — free up to 1 million characters per month." = "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. ClipVoice uses Neural2 voices — free up to 1 million characters per month.";
 
 /* Engine Status */
 "Using Google Cloud Text-to-Speech" = "Using Google Cloud Text-to-Speech";

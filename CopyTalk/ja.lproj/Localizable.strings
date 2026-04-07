@@ -13,6 +13,7 @@
 "Show Icon in Dock" = "Dock にアイコンを表示";
 "Launch at Login" = "ログイン時に起動";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above." = "ClipVoice は Apple 標準の音声でテキストを読み上げます。より高品質な音声を使用するには、上の欄に Google Cloud API キーを設定してください。";
+"ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. ClipVoice uses Neural2 voices — free up to 1 million characters per month." = "ClipVoice は Apple 標準の音声でテキストを読み上げます。より高品質な音声を使用するには、上の欄に Google Cloud API キーを設定してください。ClipVoice では Google Cloud Text-to-Speech API の Neural2 音声を使用し月間100万文字まで無料です。";
 
 /* Engine Status */
 "Using Google Cloud Text-to-Speech" = "Google Cloud Text-to-Speech を使用中";
