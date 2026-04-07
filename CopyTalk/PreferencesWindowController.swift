@@ -68,10 +68,10 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         contentView.addSubview(apiKeyField)
 
         // Engine Status
-        y -= 18
-        engineStatusLabel = NSTextField(labelWithString: "")
-        engineStatusLabel.frame = NSRect(x: fieldX, y: y, width: fieldWidth, height: 16)
-        engineStatusLabel.font = NSFont.systemFont(ofSize: 10)
+        y -= 22
+        engineStatusLabel = ClickableLinkLabel(labelWithString: "")
+        engineStatusLabel.frame = NSRect(x: fieldX, y: y, width: fieldWidth, height: 20)
+        engineStatusLabel.font = NSFont.systemFont(ofSize: 12)
         engineStatusLabel.textColor = .secondaryLabelColor
         contentView.addSubview(engineStatusLabel)
 
@@ -306,18 +306,18 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         if hasAPIKey {
             engineStatusLabel.attributedStringValue = NSAttributedString(
                 string: "Using Google Cloud Text-to-Speech".localized,
-                attributes: [.font: NSFont.systemFont(ofSize: 10), .foregroundColor: NSColor.secondaryLabelColor]
+                attributes: [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.secondaryLabelColor]
             )
         } else {
             let text = NSMutableAttributedString(
                 string: "Using Apple built-in voices".localized + " — ",
-                attributes: [.font: NSFont.systemFont(ofSize: 10), .foregroundColor: NSColor.secondaryLabelColor]
+                attributes: [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.secondaryLabelColor]
             )
             let lang = (Locale.current.language.languageCode?.identifier ?? "en") == "ja" ? "ja" : "en"
             let link = NSAttributedString(
                 string: "Get API Key".localized,
                 attributes: [
-                    .font: NSFont.systemFont(ofSize: 10),
+                    .font: NSFont.boldSystemFont(ofSize: 12),
                     .foregroundColor: NSColor.linkColor,
                     .underlineStyle: NSUnderlineStyle.single.rawValue,
                     .link: URL(string: "https://cometheart314.github.io/ClipVoice/\(lang)/api-setup.html")!
@@ -425,5 +425,54 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
 
     func windowWillClose(_ notification: Notification) {
         saveSettings()
+    }
+}
+
+// MARK: - リンク部分でポインターカーソルになる NSTextField
+
+class ClickableLinkLabel: NSTextField {
+    private var trackingArea: NSTrackingArea?
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let existing = trackingArea {
+            removeTrackingArea(existing)
+        }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseMoved, .activeInActiveApp],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        trackingArea = area
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        if linkAt(point) != nil {
+            NSCursor.pointingHand.set()
+        } else {
+            NSCursor.arrow.set()
+        }
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        NSCursor.arrow.set()
+    }
+
+    /// 指定座標にリンク属性があればその URL を返す
+    private func linkAt(_ point: NSPoint) -> URL? {
+        guard let attrString = attributedStringValue as NSAttributedString?,
+              !attrString.string.isEmpty else { return nil }
+        let textStorage = NSTextStorage(attributedString: attrString)
+        let layoutManager = NSLayoutManager()
+        let textContainer = NSTextContainer(size: bounds.size)
+        textContainer.lineFragmentPadding = 2
+        layoutManager.addTextContainer(textContainer)
+        textStorage.addLayoutManager(layoutManager)
+        let index = layoutManager.characterIndex(for: point, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
+        guard index < attrString.length else { return nil }
+        return attrString.attribute(.link, at: index, effectiveRange: nil) as? URL
     }
 }
