@@ -6,6 +6,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusBarController: StatusBarController!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 出荷初期のデフォルト値を登録（未設定のキーにのみ適用される）
+        UserDefaults.standard.register(defaults: [
+            "doubleCopySpeak": true,
+            "showInDock": true
+        ])
+
         // Dock アイコン表示設定を反映
         let showInDock = UserDefaults.standard.bool(forKey: "showInDock")
         NSApp.setActivationPolicy(showInDock ? .regular : .accessory)

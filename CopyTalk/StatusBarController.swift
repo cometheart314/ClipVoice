@@ -186,17 +186,21 @@ class StatusBarController {
 
         updateSpeakingState(true)
 
-        currentTask = Task { [weak self] in
-            guard let self = self else { return }
-
-            if useGoogleTTS {
+        if useGoogleTTS {
+            currentTask = Task { [weak self] in
+                guard let self = self else { return }
                 await self.speakWithGoogleTTS(text)
-            } else {
-                await self.speakWithAppleTTS(text)
+                await MainActor.run {
+                    self.updateSpeakingState(false)
+                }
             }
-
-            await MainActor.run {
-                self.updateSpeakingState(false)
+        } else {
+            // Apple TTS: async を使わず直接メインスレッドで実行
+            let language = textProcessor.detectLanguage(text)
+            let (paragraphs, _) = textProcessor.splitIntoParagraphsOnly(text)
+            let texts = paragraphs.map { ($0, language) }
+            appleTTSService.speak(texts: texts) { [weak self] in
+                self?.updateSpeakingState(false)
             }
         }
     }
@@ -246,22 +250,7 @@ class StatusBarController {
         await audioPlayer.playAndWait(data: combinedData)
     }
 
-    private func speakWithAppleTTS(_ text: String) async {
-        let (paragraphs, paragraphBreaks) = textProcessor.splitIntoParagraphsOnly(text)
-        guard !paragraphs.isEmpty else { return }
-
-        let language = textProcessor.detectLanguage(text)
-
-        for (index, paragraph) in paragraphs.enumerated() {
-            if Task.isCancelled { break }
-
-            await appleTTSService.speakAndWait(text: paragraph, language: language)
-
-            if paragraphBreaks.contains(index) && !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 600_000_000) // 0.6秒
-            }
-        }
-    }
+    // speakWithAppleTTS は廃止 — AppleTTSService.speak(texts:completion:) を直接使用
 
     /// PCM音声データの先頭と末尾にフェードイン/フェードアウトを適用
     private static func applyFades(_ data: inout Data, fadeSamples: Int) {

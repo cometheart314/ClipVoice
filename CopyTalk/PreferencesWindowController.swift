@@ -368,16 +368,12 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
 
         guard alert.runModal() == .alertFirstButtonReturn else { return }
 
-        // API Key
-        KeychainHelper.deleteAPIKey()
-
-        // UserDefaults
-        UserDefaults.standard.removeObject(forKey: "japaneseVoice")
-        UserDefaults.standard.removeObject(forKey: "englishVoice")
-        UserDefaults.standard.removeObject(forKey: "speakingRate")
-        UserDefaults.standard.set(true, forKey: "doubleCopySpeak")
-        UserDefaults.standard.set(true, forKey: "showInDock")
-        UserDefaults.standard.removeObject(forKey: "hasLaunchedBefore")
+        // すべての UserDefaults を削除して出荷初期状態に戻す
+        let defaults = UserDefaults.standard
+        for key in ["googleCloudTTSAPIKey", "japaneseVoice", "englishVoice",
+                     "speakingRate", "doubleCopySpeak", "showInDock", "hasLaunchedBefore"] {
+            defaults.removeObject(forKey: key)
+        }
 
         // Dock 表示を反映
         NSApp.setActivationPolicy(.regular)
@@ -418,13 +414,9 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
                 }
             }
         } else {
-            Task {
-                await appleTTSService.speakAndWait(text: text, language: language)
-
-                await MainActor.run {
-                    statusLabel.stringValue = ""
-                    button.isEnabled = true
-                }
+            appleTTSService.speak(texts: [(text, language)]) { [weak self] in
+                self?.statusLabel.stringValue = ""
+                button.isEnabled = true
             }
         }
     }
