@@ -129,12 +129,44 @@ class TextProcessor {
         return (paragraphs, breaks)
     }
 
+    /// URL文字列を「URL」に置換する
+    private func replaceURLs(_ text: String) -> String {
+        let urlPattern = #"https?://[^\s\p{Zs}、。！？）」』】〉》"']+"#
+        return text.replacingOccurrences(
+            of: urlPattern,
+            with: " URL ",
+            options: .regularExpression
+        )
+    }
+
+    /// 記号が連続している部分を除去する（装飾線や区切り線など）
+    /// 同じ記号が3回以上連続、または記号のみで構成された部分を除去
+    private func removeSymbolRuns(_ text: String) -> String {
+        var result = text
+        // 同じ記号が3回以上連続するパターンを除去（例: ===, ---, ***, ・・・, ■■■, ━━━）
+        result = result.replacingOccurrences(
+            of: #"(.)\1{2,}"#,
+            with: "",
+            options: .regularExpression
+        )
+        // 異なる記号が3文字以上連続するパターンを除去（例: ◆◇◆, =-=, ★☆★）
+        // ただし通常の句読点（。、！？…）の組み合わせは除外
+        let symbolPattern = #"[^\p{L}\p{N}\p{Zs}\n。、！？!?,，.．:：;；()（）「」『』\[\]【】〈〉《》""''…]{3,}"#
+        result = result.replacingOccurrences(
+            of: symbolPattern,
+            with: "",
+            options: .regularExpression
+        )
+        return result
+    }
+
     /// テキストを段落で分割する（空行で区切る）
     private func splitIntoParagraphs(_ text: String) -> [String] {
-        let paragraphs = text.components(separatedBy: "\n")
+        let cleaned = removeSymbolRuns(replaceURLs(text))
+        let paragraphs = cleaned.components(separatedBy: "\n")
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
-        return paragraphs.isEmpty ? [text] : paragraphs
+        return paragraphs.isEmpty ? [cleaned] : paragraphs
     }
 
     /// テキストを文単位で分割する
