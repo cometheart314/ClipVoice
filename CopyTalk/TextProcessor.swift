@@ -144,8 +144,9 @@ class TextProcessor {
     private func removeSymbolRuns(_ text: String) -> String {
         var result = text
         // 同じ記号が3回以上連続するパターンを除去（例: ===, ---, ***, ・・・, ■■■, ━━━）
+        // ただし数字・文字の連続は除外（例: 2000 の 000 を消さない）
         result = result.replacingOccurrences(
-            of: #"(.)\1{2,}"#,
+            of: #"([^\p{L}\p{N}])\1{2,}"#,
             with: "",
             options: .regularExpression
         )
