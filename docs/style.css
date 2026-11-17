@@ -77,4 +77,11 @@ footer {
   border-top: 1px solid #e8e8e8;
 }
 footer a { color: #666; }
+.screenshot {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  margin: 8px auto 0;
+}
 .license-note { font-size: 14px; color: #666; margin-top: 8px; }
