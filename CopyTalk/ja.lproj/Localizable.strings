@@ -38,6 +38,8 @@
 /* Buttons */
 "Test" = "テスト";
 "Defaults" = "デフォルト";
+"Advanced" = "高品質";
+"Hide Advanced" = "高品質を隠す";
 
 /* First Launch */
 "Welcome to ClipVoice!" = "ClipVoice へようこそ！";

@@ -23,6 +23,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
     private var launchAtLoginCheckbox: NSButton!
     private var showMonitorCheckbox: NSButton!
     private var infoLabel: NSTextField!
+    private var advancedButton: NSButton!
 
     // Google TTS 関連の UI 要素（非表示切り替え用）
     private var googleTTSViews: [NSView] = []
@@ -223,6 +224,12 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         defaultsButton.bezelStyle = .rounded
         defaultsButton.frame = NSRect(x: margin, y: y, width: 90, height: 28)
         contentView.addSubview(defaultsButton)
+
+        // Advanced Button (高品質 Google TTS 設定の表示切り替え)
+        advancedButton = NSButton(title: "Advanced".localized, target: self, action: #selector(advancedButtonClicked))
+        advancedButton.bezelStyle = .rounded
+        advancedButton.frame = NSRect(x: margin + 90 + 8, y: y, width: 110, height: 28)
+        contentView.addSubview(advancedButton)
 
         // Info (最下段)
         y -= 60
@@ -437,6 +444,10 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         applyAdvancedMode(animated: true)
     }
 
+    @objc private func advancedButtonClicked(_ sender: NSButton) {
+        toggleAdvancedMode()
+    }
+
     private func applyAdvancedMode(animated: Bool) {
         let show = showAdvanced
         let allGoogleViews = googleTTSViews + googleTTSLabels
@@ -444,6 +455,8 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         for view in allGoogleViews {
             view.isHidden = !show
         }
+
+        advancedButton?.title = show ? "Hide Advanced".localized : "Advanced".localized
 
         // Info テキストを切り替え
         if show {

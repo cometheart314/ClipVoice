@@ -38,6 +38,8 @@
 /* Buttons */
 "Test" = "Test";
 "Defaults" = "Defaults";
+"Advanced" = "Advanced";
+"Hide Advanced" = "Hide Advanced";
 
 /* First Launch */
 "Welcome to ClipVoice!" = "Welcome to ClipVoice!";
