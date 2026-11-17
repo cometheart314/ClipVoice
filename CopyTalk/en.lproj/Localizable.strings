@@ -14,8 +14,10 @@
 "Launch at Login" = "Launch at Login";
 "Show Monitor Window While Reading" = "Show Monitor Window While Reading";
 "Volume" = "Volume";
+"Transparency:" = "Transparency:";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above." = "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above.";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. Google Cloud TTS is free up to 1 million characters per month." = "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. Google Cloud TTS is free up to 1 million characters per month.";
+"ClipVoice reads clipboard text aloud.\nSelect text and press ⌘C twice quickly to start reading." = "ClipVoice reads clipboard text aloud.\nSelect text and press ⌘C twice quickly to start reading.";
 
 /* Engine Status */
 "Using Google Cloud Text-to-Speech" = "Using Google Cloud Text-to-Speech";

@@ -11,6 +11,12 @@ class MonitorWindowController: NSWindowController {
 
     static let defaultsKey = "showMonitorWindow"
     static let volumeKey = "speakingVolume"
+    static let opacityKey = "monitorOpacity"
+
+    /// 設定されているウィンドウの不透明度（0.3〜1.0）
+    static var opacity: Double {
+        min(max(UserDefaults.standard.double(forKey: opacityKey), 0.3), 1.0)
+    }
 
     /// 中止ボタンが押されたときに呼ばれる
     var onStop: (() -> Void)?
@@ -162,8 +168,13 @@ class MonitorWindowController: NSWindowController {
         }
     }
 
-    /// UserDefaults の値をスライダーに反映する
+    /// UserDefaults の値をスライダーとウィンドウの透明度に反映する
     private func syncControls() {
+        let alpha = CGFloat(Self.opacity)
+        if let window = window, abs(window.alphaValue - alpha) > 0.001 {
+            window.alphaValue = alpha
+        }
+
         let saved = UserDefaults.standard.double(forKey: "speakingRate")
         let rate = saved > 0 ? saved : 1.0
         if abs(rateSlider.doubleValue - rate) > 0.001 {

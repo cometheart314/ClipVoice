@@ -10,7 +10,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         UserDefaults.standard.register(defaults: [
             "doubleCopySpeak": true,
             "showInDock": true,
-            MonitorWindowController.volumeKey: 1.0
+            MonitorWindowController.volumeKey: 1.0,
+            MonitorWindowController.opacityKey: 1.0
         ])
 
         // Dock アイコン表示設定を反映

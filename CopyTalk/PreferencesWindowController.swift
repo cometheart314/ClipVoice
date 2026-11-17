@@ -22,6 +22,8 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
     private var showInDockCheckbox: NSButton!
     private var launchAtLoginCheckbox: NSButton!
     private var showMonitorCheckbox: NSButton!
+    private var monitorTransparencySlider: NSSlider!
+    private var monitorTransparencyLabel: NSTextField!
     private var infoLabel: NSTextField!
     private var advancedButton: NSButton!
 
@@ -218,6 +220,22 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         showMonitorCheckbox.frame = NSRect(x: fieldX, y: y, width: fieldWidth, height: 22)
         contentView.addSubview(showMonitorCheckbox)
 
+        // Monitor Window Transparency（0% = 不透明 〜 70%）
+        y -= 28
+        contentView.addSubview(makeLabel("Transparency:".localized, frame: NSRect(x: margin, y: y + 2, width: labelWidth, height: 22), alignment: .right))
+        monitorTransparencySlider = NSSlider(frame: NSRect(x: fieldX, y: y, width: 220, height: 24))
+        monitorTransparencySlider.minValue = 0.0
+        monitorTransparencySlider.maxValue = 0.7
+        monitorTransparencySlider.isContinuous = true
+        monitorTransparencySlider.target = self
+        monitorTransparencySlider.action = #selector(monitorTransparencyChanged)
+        contentView.addSubview(monitorTransparencySlider)
+
+        monitorTransparencyLabel = NSTextField(labelWithString: "0%")
+        monitorTransparencyLabel.frame = NSRect(x: fieldX + 228, y: y + 2, width: 50, height: 22)
+        monitorTransparencyLabel.textColor = .secondaryLabelColor
+        contentView.addSubview(monitorTransparencyLabel)
+
         // Defaults Button
         y -= 36
         let defaultsButton = NSButton(title: "Defaults".localized, target: self, action: #selector(resetToDefaults))
@@ -336,6 +354,14 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         showInDockCheckbox.state = UserDefaults.standard.bool(forKey: "showInDock") ? .on : .off
         launchAtLoginCheckbox.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
         showMonitorCheckbox.state = MonitorWindowController.isEnabled ? .on : .off
+        let transparency = 1.0 - MonitorWindowController.opacity
+        monitorTransparencySlider.doubleValue = transparency
+        monitorTransparencySlider.isEnabled = MonitorWindowController.isEnabled
+        updateTransparencyLabel(transparency)
+    }
+
+    private func updateTransparencyLabel(_ transparency: Double) {
+        monitorTransparencyLabel.stringValue = String(format: "%.0f%%", transparency * 100)
     }
 
     private func saveSettings() {
@@ -488,9 +514,15 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
     @objc private func showMonitorChanged(_ sender: NSButton) {
         let show = sender.state == .on
         UserDefaults.standard.set(show, forKey: MonitorWindowController.defaultsKey)
+        monitorTransparencySlider.isEnabled = show
         if !show {
             MonitorWindowController.shared.close()
         }
+    }
+
+    @objc private func monitorTransparencyChanged(_ sender: NSSlider) {
+        updateTransparencyLabel(sender.doubleValue)
+        UserDefaults.standard.set(1.0 - sender.doubleValue, forKey: MonitorWindowController.opacityKey)
     }
 
     @objc private func launchAtLoginChanged(_ sender: NSButton) {
@@ -526,7 +558,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         for key in ["googleCloudTTSAPIKey", "ttsModel", "japaneseVoice", "englishVoice",
                      "speakingRate", "doubleCopySpeak", "showInDock", "hasLaunchedBefore",
                      "showAdvancedSettings", MonitorWindowController.defaultsKey,
-                     MonitorWindowController.volumeKey] {
+                     MonitorWindowController.volumeKey, MonitorWindowController.opacityKey] {
             defaults.removeObject(forKey: key)
         }
         MonitorWindowController.shared.close()

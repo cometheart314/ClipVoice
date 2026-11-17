@@ -14,8 +14,10 @@
 "Launch at Login" = "ログイン時に起動";
 "Show Monitor Window While Reading" = "読み上げ中にモニターウィンドウを表示";
 "Volume" = "音量";
+"Transparency:" = "透明度:";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above." = "ClipVoice は Apple 標準の音声でテキストを読み上げます。より高品質な音声を使用するには、上の欄に Google Cloud API キーを設定してください。";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. Google Cloud TTS is free up to 1 million characters per month." = "ClipVoice は Apple 標準の音声でテキストを読み上げます。より高品質な音声を使用するには、上の欄に Google Cloud API キーを設定してください。Google Cloud TTS は月間100万文字まで無料です。";
+"ClipVoice reads clipboard text aloud.\nSelect text and press ⌘C twice quickly to start reading." = "ClipVoice はクリップボードのテキストを読み上げます。\nテキストを選択して ⌘C をすばやく2回押すと読み上げを開始します。";
 
 /* Engine Status */
 "Using Google Cloud Text-to-Speech" = "Google Cloud Text-to-Speech を使用中";
