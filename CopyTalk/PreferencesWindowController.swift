@@ -21,6 +21,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
     private var doubleCopySpeakCheckbox: NSButton!
     private var showInDockCheckbox: NSButton!
     private var launchAtLoginCheckbox: NSButton!
+    private var showMonitorCheckbox: NSButton!
     private var infoLabel: NSTextField!
 
     // Google TTS 関連の UI 要素（非表示切り替え用）
@@ -51,6 +52,21 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         window.delegate = self
         setupUI()
         loadSettings()
+
+        // モニターウィンドウ側で速度が変更されたらスライダーに反映する
+        NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            let saved = UserDefaults.standard.double(forKey: "speakingRate")
+            let rate = saved > 0 ? saved : 1.0
+            if abs(self.speakingRateSlider.doubleValue - rate) > 0.001 {
+                self.speakingRateSlider.doubleValue = rate
+                self.updateRateLabel(rate)
+            }
+        }
     }
 
     override func showWindow(_ sender: Any?) {
@@ -195,6 +211,12 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         launchAtLoginCheckbox.frame = NSRect(x: fieldX, y: y, width: fieldWidth, height: 22)
         contentView.addSubview(launchAtLoginCheckbox)
 
+        // Show Monitor Window
+        y -= 26
+        showMonitorCheckbox = NSButton(checkboxWithTitle: "Show Monitor Window While Reading".localized, target: self, action: #selector(showMonitorChanged))
+        showMonitorCheckbox.frame = NSRect(x: fieldX, y: y, width: fieldWidth, height: 22)
+        contentView.addSubview(showMonitorCheckbox)
+
         // Defaults Button
         y -= 36
         let defaultsButton = NSButton(title: "Defaults".localized, target: self, action: #selector(resetToDefaults))
@@ -306,6 +328,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         doubleCopySpeakCheckbox.state = UserDefaults.standard.bool(forKey: "doubleCopySpeak") ? .on : .off
         showInDockCheckbox.state = UserDefaults.standard.bool(forKey: "showInDock") ? .on : .off
         launchAtLoginCheckbox.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
+        showMonitorCheckbox.state = MonitorWindowController.isEnabled ? .on : .off
     }
 
     private func saveSettings() {
@@ -449,6 +472,14 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         NSApp.setActivationPolicy(show ? .regular : .accessory)
     }
 
+    @objc private func showMonitorChanged(_ sender: NSButton) {
+        let show = sender.state == .on
+        UserDefaults.standard.set(show, forKey: MonitorWindowController.defaultsKey)
+        if !show {
+            MonitorWindowController.shared.close()
+        }
+    }
+
     @objc private func launchAtLoginChanged(_ sender: NSButton) {
         let enable = sender.state == .on
         do {
@@ -481,9 +512,11 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         let defaults = UserDefaults.standard
         for key in ["googleCloudTTSAPIKey", "ttsModel", "japaneseVoice", "englishVoice",
                      "speakingRate", "doubleCopySpeak", "showInDock", "hasLaunchedBefore",
-                     "showAdvancedSettings"] {
+                     "showAdvancedSettings", MonitorWindowController.defaultsKey,
+                     MonitorWindowController.volumeKey] {
             defaults.removeObject(forKey: key)
         }
+        MonitorWindowController.shared.close()
 
         // Dock 表示を反映
         NSApp.setActivationPolicy(.regular)

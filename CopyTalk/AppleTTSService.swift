@@ -5,11 +5,17 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
     private var synthesizer: NSSpeechSynthesizer?
     private var pendingTexts: [(String, SpeechLanguage)] = []
     private var onAllFinished: (() -> Void)?
+    /// 読み上げ位置の通知（テキスト配列内のインデックス, そのテキスト内での単語の範囲）
+    private var onWord: ((Int, NSRange) -> Void)?
+    private var currentIndex = -1
 
     /// テキスト配列を順番に読み上げ、すべて完了したら completion を呼ぶ
-    func speak(texts: [(String, SpeechLanguage)], completion: @escaping () -> Void) {
+    /// onWord: 単語を読み上げる直前に呼ばれる（モニターウィンドウのハイライト用）
+    func speak(texts: [(String, SpeechLanguage)], onWord: ((Int, NSRange) -> Void)? = nil, completion: @escaping () -> Void) {
         stop()
         pendingTexts = texts
+        currentIndex = -1
+        self.onWord = onWord
         onAllFinished = completion
         speakNext()
     }
@@ -19,6 +25,7 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
         synthesizer?.stopSpeaking()
         synthesizer = nil
         pendingTexts.removeAll()
+        onWord = nil
         let cb = onAllFinished
         onAllFinished = nil
         cb?()
@@ -26,6 +33,7 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
 
     private func speakNext() {
         guard !pendingTexts.isEmpty else {
+            onWord = nil
             let cb = onAllFinished
             onAllFinished = nil
             cb?()
@@ -33,13 +41,13 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
         }
 
         let (text, language) = pendingTexts.removeFirst()
+        currentIndex += 1
         let voice = voiceForLanguage(language)
         let synth = NSSpeechSynthesizer(voice: voice)!
         synth.delegate = self
         synthesizer = synth
 
-        let rate = UserDefaults.standard.double(forKey: "speakingRate")
-        synth.rate = mapSpeakingRate(rate > 0 ? rate : 1.0)
+        applySettings(to: synth)
 
         if !synth.startSpeaking(text) {
             speakNext()
@@ -100,6 +108,21 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
         return premium.first ?? compact.first ?? premiumOther.first ?? compactOther.first ?? defaultVoice
     }
 
+    /// 読み上げ中の音声に現在の速度・音量設定を反映する
+    func applyCurrentSettings() {
+        if let synth = synthesizer {
+            applySettings(to: synth)
+        }
+    }
+
+    private func applySettings(to synth: NSSpeechSynthesizer) {
+        let rate = UserDefaults.standard.double(forKey: "speakingRate")
+        let newRate = mapSpeakingRate(rate > 0 ? rate : 1.0)
+        if synth.rate != newRate { synth.rate = newRate }
+        let newVolume = Float(UserDefaults.standard.double(forKey: MonitorWindowController.volumeKey))
+        if synth.volume != newVolume { synth.volume = newVolume }
+    }
+
     private func mapSpeakingRate(_ googleRate: Double) -> Float {
         let mapped = 100 + (googleRate - 0.5) * (250.0 / 1.5)
         return Float(max(80, min(400, mapped)))
@@ -109,5 +132,10 @@ class AppleTTSService: NSObject, NSSpeechSynthesizerDelegate {
 
     func speechSynthesizer(_ sender: NSSpeechSynthesizer, didFinishSpeaking finishedSpeaking: Bool) {
         speakNext()
+    }
+
+    func speechSynthesizer(_ sender: NSSpeechSynthesizer, willSpeakWord characterRange: NSRange, of string: String) {
+        guard sender === synthesizer else { return }
+        onWord?(currentIndex, characterRange)
     }
 }

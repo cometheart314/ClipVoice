@@ -58,6 +58,12 @@ class StatusBarController {
             } else if !enabled && self.clipboardTimer != nil {
                 self.stopClipboardMonitoring()
             }
+            self.applyPlaybackSettings()
+        }
+
+        applyPlaybackSettings()
+        MonitorWindowController.shared.onStop = { [weak self] in
+            self?.stopSpeaking()
         }
     }
 
@@ -190,6 +196,9 @@ class StatusBarController {
             currentTask = Task { [weak self] in
                 guard let self = self else { return }
                 await self.speakWithGoogleTTS(text)
+                // キャンセル時は stopSpeaking() 側で状態を更新済み
+                // （ここで更新すると次に始まった読み上げの状態を壊してしまう）
+                if Task.isCancelled { return }
                 await MainActor.run {
                     self.updateSpeakingState(false)
                 }
@@ -197,9 +206,13 @@ class StatusBarController {
         } else {
             // Apple TTS: async を使わず直接メインスレッドで実行
             let language = textProcessor.detectLanguage(text)
-            let (paragraphs, _) = textProcessor.splitIntoParagraphsOnly(text)
+            let (paragraphs, paragraphBreaks) = textProcessor.splitIntoParagraphsOnly(text)
             let texts = paragraphs.map { ($0, language) }
-            appleTTSService.speak(texts: texts) { [weak self] in
+            let monitor = MonitorWindowController.isEnabled ? MonitorWindowController.shared : nil
+            monitor?.show(segments: paragraphs, paragraphBreaks: paragraphBreaks)
+            appleTTSService.speak(texts: texts, onWord: { index, range in
+                monitor?.highlight(segment: index, inner: range)
+            }) { [weak self] in
                 self?.updateSpeakingState(false)
             }
         }
@@ -209,6 +222,9 @@ class StatusBarController {
         let model = await MainActor.run { TTSModel.current }
         let (chunks, paragraphBreaks) = textProcessor.splitText(text, model: model)
         guard !chunks.isEmpty else { return }
+
+        let monitor = MonitorWindowController.isEnabled ? MonitorWindowController.shared : nil
+        monitor?.show(segments: chunks, paragraphBreaks: paragraphBreaks)
 
         let language = textProcessor.detectLanguage(text)
         let fadeSamples = 480
@@ -240,12 +256,15 @@ class StatusBarController {
             do {
                 var audioData = try await prefetchTasks[index].value
                 Self.applyFades(&audioData, fadeSamples: fadeSamples)
+                // 段落間の無音を含まない、音声そのものの長さ（モニターのハイライト推定用）
+                let speechDuration = Double(audioData.count / MemoryLayout<Int16>.size) / 24000
 
                 if paragraphBreaks.contains(index) {
                     audioData.append(silenceBytes)
                 }
 
                 if Task.isCancelled { return }
+                monitor?.highlight(segment: index, estimatedDuration: speechDuration)
                 await audioPlayer.playAndWait(data: audioData)
             } catch {
                 if Task.isCancelled { return }
@@ -288,8 +307,15 @@ class StatusBarController {
         }
     }
 
+    /// 速度・音量の設定を再生中の音声に反映する（モニターウィンドウのスライダー操作など）
+    private func applyPlaybackSettings() {
+        audioPlayer.volume = Float(UserDefaults.standard.double(forKey: MonitorWindowController.volumeKey))
+        appleTTSService.applyCurrentSettings()
+    }
+
     private func updateSpeakingState(_ speaking: Bool) {
         isSpeaking = speaking
+        MonitorWindowController.shared.setSpeaking(speaking)
         readClipboardItem.isEnabled = !speaking
         stopItem.isEnabled = speaking
 

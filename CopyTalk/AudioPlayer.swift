@@ -14,6 +14,12 @@ class AudioPlayer {
         engine.connect(playerNode, to: engine.mainMixerNode, format: format)
     }
 
+    /// 再生音量（0.0〜1.0）。再生中でも即座に反映される
+    var volume: Float {
+        get { playerNode.volume }
+        set { playerNode.volume = newValue }
+    }
+
     /// エンジンを起動し、短い無音を再生してオーディオパイプラインを暖める
     func warmUp() async {
         ensureEngineRunning()

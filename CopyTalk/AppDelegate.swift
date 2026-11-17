@@ -9,7 +9,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // 出荷初期のデフォルト値を登録（未設定のキーにのみ適用される）
         UserDefaults.standard.register(defaults: [
             "doubleCopySpeak": true,
-            "showInDock": true
+            "showInDock": true,
+            MonitorWindowController.volumeKey: 1.0
         ])
 
         // Dock アイコン表示設定を反映

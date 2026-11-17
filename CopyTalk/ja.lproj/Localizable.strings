@@ -12,6 +12,8 @@
 "Speak on Double Copy (⌘C ⌘C)" = "ダブルコピーで読み上げ (⌘C ⌘C)";
 "Show Icon in Dock" = "Dock にアイコンを表示";
 "Launch at Login" = "ログイン時に起動";
+"Show Monitor Window While Reading" = "読み上げ中にモニターウィンドウを表示";
+"Volume" = "音量";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above." = "ClipVoice は Apple 標準の音声でテキストを読み上げます。より高品質な音声を使用するには、上の欄に Google Cloud API キーを設定してください。";
 "ClipVoice reads clipboard text aloud using Apple's built-in voices. For higher quality, set a Google Cloud API key above. Google Cloud TTS is free up to 1 million characters per month." = "ClipVoice は Apple 標準の音声でテキストを読み上げます。より高品質な音声を使用するには、上の欄に Google Cloud API キーを設定してください。Google Cloud TTS は月間100万文字まで無料です。";
 

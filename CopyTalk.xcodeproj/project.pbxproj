@@ -17,6 +17,7 @@
 		A10006 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10006 /* KeychainHelper.swift */; };
 		A10007 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10007 /* PreferencesWindowController.swift */; };
 		A10008 /* AppleTTSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10008 /* AppleTTSService.swift */; };
+		A1000M /* MonitorWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000M /* MonitorWindowController.swift */; };
 		A10009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10009 /* Assets.xcassets */; };
 		A10010 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10012 /* Localizable.strings */; };
 		A10011 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B10015 /* InfoPlist.strings */; };
@@ -33,6 +34,7 @@
 		B10006 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		B10007 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		B10008 /* AppleTTSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleTTSService.swift; sourceTree = "<group>"; };
+		B1000M /* MonitorWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitorWindowController.swift; sourceTree = "<group>"; };
 		B10009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10010 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10011 /* CopyTalk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CopyTalk.entitlements; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 				B10006 /* KeychainHelper.swift */,
 				B10007 /* PreferencesWindowController.swift */,
 				B10008 /* AppleTTSService.swift */,
+				B1000M /* MonitorWindowController.swift */,
 				B10009 /* Assets.xcassets */,
 				74DF38D82F7FBC7300E46FAB /* CopyTalkAppIcon.icon */,
 				B10010 /* Info.plist */,
@@ -174,6 +177,7 @@
 				A10006 /* KeychainHelper.swift in Sources */,
 				A10007 /* PreferencesWindowController.swift in Sources */,
 				A10008 /* AppleTTSService.swift in Sources */,
+				A1000M /* MonitorWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
