@@ -365,6 +365,10 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
     }
 
     private func saveSettings() {
+        // 速度は最初に保存する。他のキーの書き込みで didChangeNotification の監視が
+        // 走ったとき、保存済みの値とスライダーの値が食い違わないようにするため。
+        UserDefaults.standard.set(speakingRateSlider.doubleValue, forKey: "speakingRate")
+
         let key = apiKeyField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         if !key.isEmpty {
             KeychainHelper.saveAPIKey(key)
@@ -383,8 +387,6 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         if let enVoice = englishVoicePopup.selectedItem?.representedObject as? String {
             UserDefaults.standard.set(enVoice, forKey: "englishVoice")
         }
-
-        UserDefaults.standard.set(speakingRateSlider.doubleValue, forKey: "speakingRate")
     }
 
     private func updateRateLabel(_ rate: Double) {
@@ -415,7 +417,10 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
 
     @objc private func speakingRateChanged(_ sender: NSSlider) {
         updateRateLabel(sender.doubleValue)
-        saveSettings()
+        // saveSettings() は使わず速度だけを保存する。
+        // 他のキーを先に書き込むと UserDefaults.didChangeNotification の監視が
+        // 古い速度を読んでスライダーを元の位置へ戻してしまう。
+        UserDefaults.standard.set(sender.doubleValue, forKey: "speakingRate")
     }
 
     @objc private func apiKeyChanged(_ sender: NSTextField) {
