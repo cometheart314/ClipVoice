@@ -1,6 +1,37 @@
 import Cocoa
 import ServiceManagement
 
+/// アプリ全体のアピアランス設定（自動 / ライト / ダーク）
+enum AppAppearance: String, CaseIterable {
+    case auto
+    case light
+    case dark
+
+    static let defaultsKey = "appearance"
+
+    static var current: AppAppearance {
+        let raw = UserDefaults.standard.string(forKey: defaultsKey) ?? ""
+        return AppAppearance(rawValue: raw) ?? .auto
+    }
+
+    var displayName: String {
+        switch self {
+        case .auto: return "Auto".localized
+        case .light: return "Light".localized
+        case .dark: return "Dark".localized
+        }
+    }
+
+    /// アプリ全体に適用する。auto は nil を設定してシステム設定に従わせる。
+    func apply() {
+        switch self {
+        case .auto: NSApp.appearance = nil
+        case .light: NSApp.appearance = NSAppearance(named: .aqua)
+        case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
+        }
+    }
+}
+
 class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextFieldDelegate {
 
     static let shared: PreferencesWindowController = {
@@ -24,6 +55,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
     private var showMonitorCheckbox: NSButton!
     private var monitorTransparencySlider: NSSlider!
     private var monitorTransparencyLabel: NSTextField!
+    private var appearancePopup: NSPopUpButton!
     private var infoLabel: NSTextField!
     private var advancedButton: NSButton!
 
@@ -43,7 +75,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
 
     convenience init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 450, height: 540),
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 570),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -87,7 +119,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         let labelWidth: CGFloat = 110
         let fieldX: CGFloat = margin + labelWidth + 8
         let fieldWidth: CGFloat = 280
-        var y: CGFloat = 450
+        var y: CGFloat = 480
 
         // API Key
         let apiKeyLabel = makeLabel("API Key:".localized, frame: NSRect(x: margin, y: y, width: labelWidth, height: 22), alignment: .right)
@@ -236,6 +268,18 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         monitorTransparencyLabel.textColor = .secondaryLabelColor
         contentView.addSubview(monitorTransparencyLabel)
 
+        // Appearance（自動 / ライト / ダーク）
+        y -= 32
+        contentView.addSubview(makeLabel("Appearance:".localized, frame: NSRect(x: margin, y: y + 2, width: labelWidth, height: 22), alignment: .right))
+        appearancePopup = NSPopUpButton(frame: NSRect(x: fieldX, y: y, width: 200, height: 26))
+        for appearance in AppAppearance.allCases {
+            appearancePopup.addItem(withTitle: appearance.displayName)
+            appearancePopup.lastItem?.representedObject = appearance.rawValue
+        }
+        appearancePopup.target = self
+        appearancePopup.action = #selector(appearanceChanged)
+        contentView.addSubview(appearancePopup)
+
         // Defaults Button
         y -= 36
         let defaultsButton = NSButton(title: "Defaults".localized, target: self, action: #selector(resetToDefaults))
@@ -358,6 +402,9 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         monitorTransparencySlider.doubleValue = transparency
         monitorTransparencySlider.isEnabled = MonitorWindowController.isEnabled
         updateTransparencyLabel(transparency)
+
+        let appearance = AppAppearance.current
+        appearancePopup.selectItem(at: AppAppearance.allCases.firstIndex(of: appearance) ?? 0)
     }
 
     private func updateTransparencyLabel(_ transparency: Double) {
@@ -497,7 +544,7 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         }
 
         // ウィンドウの高さを調整
-        let targetHeight: CGFloat = show ? 540 : 380
+        let targetHeight: CGFloat = show ? 570 : 410
         guard let window = window else { return }
         var frame = window.frame
         let delta = targetHeight - frame.size.height
@@ -528,6 +575,13 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
     @objc private func monitorTransparencyChanged(_ sender: NSSlider) {
         updateTransparencyLabel(sender.doubleValue)
         UserDefaults.standard.set(1.0 - sender.doubleValue, forKey: MonitorWindowController.opacityKey)
+    }
+
+    @objc private func appearanceChanged(_ sender: NSPopUpButton) {
+        guard let raw = sender.selectedItem?.representedObject as? String,
+              let appearance = AppAppearance(rawValue: raw) else { return }
+        UserDefaults.standard.set(appearance.rawValue, forKey: AppAppearance.defaultsKey)
+        appearance.apply()
     }
 
     @objc private func launchAtLoginChanged(_ sender: NSButton) {
@@ -563,13 +617,17 @@ class PreferencesWindowController: NSWindowController, NSWindowDelegate, NSTextF
         for key in ["googleCloudTTSAPIKey", "ttsModel", "japaneseVoice", "englishVoice",
                      "speakingRate", "doubleCopySpeak", "showInDock", "hasLaunchedBefore",
                      "showAdvancedSettings", MonitorWindowController.defaultsKey,
-                     MonitorWindowController.volumeKey, MonitorWindowController.opacityKey] {
+                     MonitorWindowController.volumeKey, MonitorWindowController.opacityKey,
+                     AppAppearance.defaultsKey] {
             defaults.removeObject(forKey: key)
         }
         MonitorWindowController.shared.close()
 
         // Dock 表示を反映
         NSApp.setActivationPolicy(.regular)
+
+        // アピアランスを自動（システム設定に従う）に戻す
+        AppAppearance.current.apply()
 
         // UI を再読み込み
         loadSettings()

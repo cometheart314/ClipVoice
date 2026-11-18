@@ -18,6 +18,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let showInDock = UserDefaults.standard.bool(forKey: "showInDock")
         NSApp.setActivationPolicy(showInDock ? .regular : .accessory)
 
+        // アピアランス設定（自動 / ライト / ダーク）を反映
+        AppAppearance.current.apply()
+
         statusBarController = StatusBarController()
 
         // サービスメニューのプロバイダーを登録
